@@ -24,7 +24,35 @@ Import your LinkedIn connections to build your network graph.
 
 ---
 
-### 2. Investor Database & Matching
+### 2. Crunchbase Investor Integration
+
+Auto-populate your investor database from Crunchbase.
+
+**Features:**
+- Search Crunchbase by name or keyword
+- Batch import multiple investors at once
+- Curated list of top 15 VC firms (YC, a16z, Sequoia, etc.)
+- Auto-extract: investment stages, sectors, check sizes, HQ location
+- Diversity focus inferred from portfolio analysis
+
+**Setup:**
+Add to your `.env` file:
+```
+CRUNCHBASE_API_KEY=your_api_key_here
+```
+
+Get a free API key: https://www.crunchbase.com/api/pricing
+(Free tier: 50 calls/day)
+
+**API Endpoints:**
+- `GET /api/crunchbase/search?query=sequoia` - Search investors
+- `GET /api/crunchbase/investor/:uuid` - Import single investor
+- `GET /api/crunchbase/curated` - Get curated top VC list
+- `POST /api/crunchbase/batch-import` - Import multiple investors
+
+---
+
+### 3. Investor Database & Matching
 
 Build a database of investors with their acceptance criteria and get matched based on your founder profile.
 
@@ -81,11 +109,11 @@ Or manually run the SQL in `backend/migrations/004_linkedin_and_investors.sql`
 
 ## Next Steps (Future Enhancements)
 
-1. **Crunchbase Integration** - Auto-populate investor data from Crunchbase API
-2. **Connection Path Visualization** - Show actual paths through your LinkedIn network to investors
-3. **Warm Intro Requests** - Generate intro request drafts for mutual connections
-4. **Investor Research** - Scrape investor websites for thesis details
-5. **Pipeline Tracking** - Track which investors you've contacted, responses, meetings
+1. **Connection Path Visualization** - Show actual paths through your LinkedIn network to investors
+2. **Warm Intro Requests** - Generate intro request drafts for mutual connections
+3. **Pipeline Tracking** - Track which investors you've contacted, responses, meetings
+4. **Auto-Enrichment Cron** - Periodically update investor data from Crunchbase
+5. **Investor Research** - Scrape investor websites for thesis details
 
 ---
 
