@@ -519,6 +519,76 @@ app.post('/api/investor-matches', async (req, res) => {
   }
 });
 
+// --- CRUNCHBASE INTEGRATION ROUTES ---
+
+// 19. GET: Search Crunchbase for Investors
+app.get('/api/crunchbase/search', async (req, res) => {
+  const { query } = req.query;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter required' });
+  }
+
+  try {
+    const { CrunchbaseService } = await import('./services/CrunchbaseService.js');
+    
+    const results = await CrunchbaseService.searchInvestors(query as string);
+    res.json(results);
+  } catch (err: any) {
+    console.error("Crunchbase Search Error:", err.message);
+    res.status(500).json({ error: 'Crunchbase search failed', details: err.message });
+  }
+});
+
+// 20. GET: Get Crunchbase Investor Details
+app.get('/api/crunchbase/investor/:uuid', async (req, res) => {
+  const { uuid } = req.params;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { CrunchbaseService } = await import('./services/CrunchbaseService.js');
+    
+    const investor = await CrunchbaseService.importFromCrunchbase(tenantId, uuid);
+    res.json(investor);
+  } catch (err: any) {
+    console.error("Crunchbase Import Error:", err.message);
+    res.status(500).json({ error: 'Failed to import investor', details: err.message });
+  }
+});
+
+// 21. GET: Get Curated Investor List
+app.get('/api/crunchbase/curated', async (req, res) => {
+  try {
+    const { CrunchbaseService } = await import('./services/CrunchbaseService.js');
+    
+    const curated = CrunchbaseService.getCuratedInvestors();
+    res.json(curated);
+  } catch (err: any) {
+    console.error("Curated List Error:", err.message);
+    res.status(500).json({ error: 'Failed to fetch curated list' });
+  }
+});
+
+// 22. POST: Batch Import from Crunchbase
+app.post('/api/crunchbase/batch-import', async (req, res) => {
+  const { uuids } = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  if (!Array.isArray(uuids)) {
+    return res.status(400).json({ error: 'uuids array required' });
+  }
+
+  try {
+    const { CrunchbaseService } = await import('./services/CrunchbaseService.js');
+    
+    const results = await CrunchbaseService.batchImport(tenantId, uuids);
+    res.json(results);
+  } catch (err: any) {
+    console.error("Batch Import Error:", err.message);
+    res.status(500).json({ error: 'Batch import failed', details: err.message });
+  }
+});
+
 // --- START SERVER ---
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
