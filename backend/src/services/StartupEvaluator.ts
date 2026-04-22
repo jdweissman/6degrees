@@ -216,6 +216,7 @@ export async function evaluateStartup(input: EvaluationInput): Promise<Evaluatio
   ]);
 
   const content = response.content as string;
+  console.log('Raw LLM response:', content.substring(0, 500));
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   
   if (!jsonMatch) {
@@ -223,5 +224,6 @@ export async function evaluateStartup(input: EvaluationInput): Promise<Evaluatio
   }
 
   const parsed = JSON.parse(jsonMatch[0]);
+  console.log('Parsed JSON:', JSON.stringify(parsed, null, 2).substring(0, 500));
   return EvaluationSchema.parse(parsed);
 }
