@@ -71,7 +71,7 @@ export class CrunchbaseService {
         throw new Error(`Crunchbase API error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       
       return (data.entities || []).map((entity: any) => ({
         uuid: entity.uuid,
@@ -110,7 +110,7 @@ export class CrunchbaseService {
         throw new Error(`Crunchbase API error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       const props = data.properties || {};
 
       // Extract investor type
