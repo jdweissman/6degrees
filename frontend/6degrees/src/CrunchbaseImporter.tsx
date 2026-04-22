@@ -115,7 +115,9 @@ export const CrunchbaseImporter: React.FC = () => {
   const loadCuratedList = async () => {
     setShowCurated(true);
     try {
-      const res = await axios.get('http://localhost:3001/api/crunchbase/curated');
+      const res = await axios.get('http://localhost:3001/api/crunchbase/curated', {
+        headers: { 'x-tenant-id': TENANT_ID }
+      });
       setCuratedList(res.data);
     } catch (err) {
       setError('Failed to load curated list');
