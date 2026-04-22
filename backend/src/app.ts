@@ -580,8 +580,43 @@ app.post('/api/crunchbase/batch-import', async (req, res) => {
 
   try {
     const { CrunchbaseService } = await import('./services/CrunchbaseService.js');
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
     
-    const results = await CrunchbaseService.batchImport(tenantId, uuids);
+    // Check if these are Crunchbase URLs or curated investor slugs
+    const curated = CrunchbaseService.getCuratedInvestors();
+    const curatedSlugs = curated.map(c => c.crunchbase_url);
+    
+    const results = { imported: 0, failed: 0, errors: [] as string[] };
+    
+    for (const slug of uuids) {
+      try {
+        // Check if it's a curated investor
+        const curatedInvestor = curated.find(c => c.crunchbase_url === slug);
+        
+        if (curatedInvestor) {
+          // Add curated investor directly without API call
+          await InvestorMatchService.addInvestor(tenantId, {
+            name: curatedInvestor.name,
+            firm: curatedInvestor.name,
+            crunchbase_url: `https://www.crunchbase.com/organization/${slug}`,
+            preferred_stages: ['seed', 'series-a', 'series-b'],
+            preferred_sectors: ['saas', 'ai', 'fintech', 'consumer', 'enterprise'],
+            preferred_regions: ['north-america', 'remote-ok'],
+            thesis: curatedInvestor.focus,
+            source: 'curated'
+          });
+          results.imported++;
+        } else {
+          // Try to fetch from Crunchbase API
+          await CrunchbaseService.importFromCrunchbase(tenantId, slug);
+          results.imported++;
+        }
+      } catch (error: any) {
+        results.failed++;
+        results.errors.push(`${slug}: ${error.message}`);
+      }
+    }
+    
     res.json(results);
   } catch (err: any) {
     console.error("Batch Import Error:", err.message);
