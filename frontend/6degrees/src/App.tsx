@@ -15,6 +15,8 @@ import {
 import './index.css';
 import { StartupWizard } from './StartupWizard';
 import { PitchDeck } from './PitchDeck';
+import { LinkedInImporter } from './LinkedInImporter';
+import { InvestorMatcher } from './InvestorMatcher';
 
 // --- Types ---
 interface NodeProps {
@@ -100,7 +102,7 @@ const Scorecard = ({ scores, onGenerateDeck }: { scores: any[], onGenerateDeck: 
 
 // --- Main App ---
 export default function App() {
-  const [view, setView] = useState<'network' | 'wizard' | 'analysis' | 'pitch-deck'>('network');
+  const [view, setView] = useState<'network' | 'wizard' | 'analysis' | 'pitch-deck' | 'linkedin' | 'investors'>('network');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [title, setTitle] = useState('');
@@ -233,10 +235,12 @@ export default function App() {
           </form>
         </header>
 
-        <div className="flex gap-4 mb-8">
-          <button onClick={() => setView('network')} className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'network' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Network Map</button>
-          <button onClick={() => setView('wizard')} className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'wizard' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Startup Wizard</button>
-          <button onClick={() => setView('analysis')} className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'analysis' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Readiness Scorecard</button>
+        <div className="flex gap-2 mb-8 flex-wrap">
+          <button onClick={() => setView('network')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'network' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Network Map</button>
+          <button onClick={() => setView('linkedin')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'linkedin' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>LinkedIn Import</button>
+          <button onClick={() => setView('investors')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'investors' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Investor Matches</button>
+          <button onClick={() => setView('wizard')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'wizard' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Startup Wizard</button>
+          <button onClick={() => setView('analysis')} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${view === 'analysis' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>Scorecard</button>
         </div>
 
         {view === 'network' ? (
@@ -293,6 +297,10 @@ export default function App() {
           />
         ) : view === 'pitch-deck' ? (
           <PitchDeck evaluationData={evaluationData} onBack={() => setView('analysis')} />
+        ) : view === 'linkedin' ? (
+          <LinkedInImporter />
+        ) : view === 'investors' ? (
+          <InvestorMatcher />
         ) : (
           <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-left">
             <h2 className="text-2xl font-black mb-6">12-Slide Pitch Outline</h2>
