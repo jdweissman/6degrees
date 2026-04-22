@@ -361,6 +361,164 @@ app.get('/api/network/:name', async (req, res) => {
   }
 });
 
+// --- LINKEDIN IMPORT ROUTES ---
+
+// 10. POST: Upload LinkedIn Connections CSV
+app.post('/api/linkedin/import', async (req, res) => {
+  const { connections } = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { LinkedInImportService } = await import('./services/LinkedInImportService.js');
+    
+    const result = await LinkedInImportService.importConnections(tenantId, connections);
+    
+    res.json({
+      message: 'Connections imported successfully',
+      ...result
+    });
+  } catch (err: any) {
+    console.error("LinkedIn Import Error:", err.message);
+    res.status(500).json({ error: 'Import failed', details: err.message });
+  }
+});
+
+// 11. GET: Get LinkedIn Connections
+app.get('/api/linkedin/connections', async (req, res) => {
+  const { company, search } = req.query;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { LinkedInImportService } = await import('./services/LinkedInImportService.js');
+    
+    const connections = await LinkedInImportService.getConnections(tenantId, {
+      company: company as string,
+      search: search as string
+    });
+    
+    res.json(connections);
+  } catch (err: any) {
+    console.error("Get Connections Error:", err.message);
+    res.status(500).json({ error: 'Failed to fetch connections' });
+  }
+});
+
+// 12. GET: Get Connection Stats
+app.get('/api/linkedin/stats', async (req, res) => {
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { LinkedInImportService } = await import('./services/LinkedInImportService.js');
+    
+    const stats = await LinkedInImportService.getStats(tenantId);
+    res.json(stats);
+  } catch (err: any) {
+    console.error("Get Stats Error:", err.message);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// --- INVESTOR MATCHING ROUTES ---
+
+// 13. POST: Save Founder Profile
+app.post('/api/founder-profile', async (req, res) => {
+  const profile = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const savedProfile = await InvestorMatchService.saveFounderProfile(tenantId, profile);
+    res.status(201).json(savedProfile);
+  } catch (err: any) {
+    console.error("Save Founder Profile Error:", err.message);
+    res.status(500).json({ error: 'Failed to save profile' });
+  }
+});
+
+// 14. GET: Get Founder Profile
+app.get('/api/founder-profile/:name', async (req, res) => {
+  const { name } = req.params;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const profile = await InvestorMatchService.getFounderProfile(tenantId, name);
+    res.json(profile || {});
+  } catch (err: any) {
+    console.error("Get Founder Profile Error:", err.message);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// 15. POST: Add Investor
+app.post('/api/investors', async (req, res) => {
+  const investor = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const savedInvestor = await InvestorMatchService.addInvestor(tenantId, investor);
+    res.status(201).json(savedInvestor);
+  } catch (err: any) {
+    console.error("Add Investor Error:", err.message);
+    res.status(500).json({ error: 'Failed to add investor' });
+  }
+});
+
+// 16. GET: Get All Investors
+app.get('/api/investors', async (req, res) => {
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const investors = await InvestorMatchService.getInvestors(tenantId);
+    res.json(investors);
+  } catch (err: any) {
+    console.error("Get Investors Error:", err.message);
+    res.status(500).json({ error: 'Failed to fetch investors' });
+  }
+});
+
+// 17. DELETE: Delete Investor
+app.delete('/api/investors/:id', async (req, res) => {
+  const { id } = req.params;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const deleted = await InvestorMatchService.deleteInvestor(tenantId, id);
+    if (deleted) {
+      res.json({ message: 'Investor deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Investor not found' });
+    }
+  } catch (err: any) {
+    console.error("Delete Investor Error:", err.message);
+    res.status(500).json({ error: 'Failed to delete investor' });
+  }
+});
+
+// 18. POST: Find Investor Matches
+app.post('/api/investor-matches', async (req, res) => {
+  const founderProfile = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { InvestorMatchService } = await import('./services/InvestorMatchService.js');
+    
+    const matches = await InvestorMatchService.findMatches(tenantId, founderProfile);
+    res.json(matches);
+  } catch (err: any) {
+    console.error("Find Matches Error:", err.message);
+    res.status(500).json({ error: 'Failed to find matches' });
+  }
+});
+
 // --- START SERVER ---
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
