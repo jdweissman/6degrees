@@ -114,7 +114,80 @@ app.post('/api/decks', async (req, res) => {
   }
 });
 
-// 5. GET: List All Decks for Tenant
+// 5. POST: Evaluate Startup (LLM-powered)
+app.post('/api/evaluate', async (req, res) => {
+  const { company_name, business, market, product, traction, competition, gtm, operations, team, finances, ask } = req.body;
+  const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
+
+  try {
+    const { evaluateStartup } = await import('./services/StartupEvaluator.js');
+    
+    const evaluation = await evaluateStartup({
+      company_name: company_name || 'Untitled Startup',
+      business: business || '',
+      market: market || '',
+      product: product || '',
+      traction: traction || '',
+      competition: competition || '',
+      gtm: gtm || '',
+      operations: operations || '',
+      team: team || '',
+      finances: finances || '',
+      ask: ask || ''
+    });
+
+    // Save evaluation results to database
+    const result = await db.query(
+      `INSERT INTO startups (
+        tenant_id, company_name,
+        business_description, market_analysis, product_details,
+        competition_strategy, gtm_strategy, traction_data,
+        operations_plan, team_background, financial_projections, the_ask,
+        score_business, score_market, score_product, score_competition,
+        score_gtm, score_traction, score_ops, score_team,
+        score_finances, score_ask,
+        feedback_business, feedback_market, feedback_product,
+        feedback_competition, feedback_gtm, feedback_traction,
+        feedback_ops, feedback_team, feedback_finances, feedback_ask,
+        overall_assessment, recommended_next_steps
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+                $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
+                $23, $24, $25, $26, $27, $28, $29, $30, $31, $32,
+                $33, $34)
+      RETURNING *`,
+      [
+        tenantId, company_name || 'Untitled Startup',
+        business, market, product, competition, gtm, traction, operations, team, finances, ask,
+        evaluation.business.score, evaluation.market.score, evaluation.product.score, evaluation.competition.score,
+        evaluation.gtm.score, evaluation.traction.score, evaluation.operations.score, evaluation.team.score,
+        evaluation.finances.score, evaluation.ask.score,
+        JSON.stringify(evaluation.business),
+        JSON.stringify(evaluation.market),
+        JSON.stringify(evaluation.product),
+        JSON.stringify(evaluation.competition),
+        JSON.stringify(evaluation.gtm),
+        JSON.stringify(evaluation.traction),
+        JSON.stringify(evaluation.operations),
+        JSON.stringify(evaluation.team),
+        JSON.stringify(evaluation.finances),
+        JSON.stringify(evaluation.ask),
+        evaluation.overall_assessment,
+        JSON.stringify(evaluation.recommended_next_steps)
+      ]
+    );
+
+    res.json({
+      message: 'Evaluation completed',
+      data: result.rows[0],
+      evaluation
+    });
+  } catch (err: any) {
+    console.error("Evaluation Error:", err.message);
+    res.status(500).json({ error: 'Evaluation failed', details: err.message });
+  }
+});
+
+// 6. GET: List All Decks for Tenant
 app.get('/api/decks', async (req, res) => {
   const tenantId = (req as any).tenantId || req.headers['x-tenant-id'];
 
