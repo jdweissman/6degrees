@@ -245,13 +245,14 @@ export class InvestorMatchService {
     preferred_sectors?: string[];
     preferred_regions?: string[];
     thesis?: string;
+    source?: string;
   }) {
     const result = await db.query(
       `INSERT INTO investors (
          tenant_id, name, firm, website, linkedin_url, crunchbase_url,
          check_women_founded, check_minority_founded, check_veteran_founded, check_lgbtq_founded,
-         min_check_size_usd, max_check_size_usd, preferred_stages, preferred_sectors, preferred_regions, thesis
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+         min_check_size_usd, max_check_size_usd, preferred_stages, preferred_sectors, preferred_regions, thesis, source
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        RETURNING *`,
       [
         tenantId,
@@ -269,7 +270,8 @@ export class InvestorMatchService {
         investor.preferred_stages ? JSON.stringify(investor.preferred_stages) : null,
         investor.preferred_sectors ? JSON.stringify(investor.preferred_sectors) : null,
         investor.preferred_regions ? JSON.stringify(investor.preferred_regions) : null,
-        investor.thesis || ''
+        investor.thesis || '',
+        investor.source || 'manual'
       ]
     );
 
