@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Save, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2 } from 'lucide-react';
 
 const categories = [
   { id: 'business', label: 'Business Description', icon: '📝' },
@@ -14,7 +14,12 @@ const categories = [
   { id: 'ask', label: 'The Ask', icon: '🎯' },
 ];
 
-export const StartupWizard = ({ onComplete }: { onComplete: (data: any) => void }) => {
+interface StartupWizardProps {
+  onComplete: (data: any) => void;
+  isEvaluating?: boolean;
+}
+
+export const StartupWizard: React.FC<StartupWizardProps> = ({ onComplete, isEvaluating = false }) => {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState<any>({});
 
@@ -72,9 +77,22 @@ export const StartupWizard = ({ onComplete }: { onComplete: (data: any) => void 
         {step === categories.length - 1 ? (
           <button 
             onClick={() => onComplete(formData)}
-            className="flex items-center gap-2 px-8 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-emerald-900/20"
+            disabled={isEvaluating}
+            className={`flex items-center gap-2 px-8 py-2 rounded-lg font-bold text-sm transition-all shadow-lg ${
+              isEvaluating 
+                ? 'bg-slate-700 text-slate-400 cursor-not-allowed' 
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20'
+            }`}
           >
-            <CheckCircle size={18} /> Submit for Evaluation
+            {isEvaluating ? (
+              <>
+                <Loader2 size={18} className="animate-spin" /> Analyzing...
+              </>
+            ) : (
+              <>
+                <CheckCircle size={18} /> Submit for Evaluation
+              </>
+            )}
           </button>
         ) : (
           <button 

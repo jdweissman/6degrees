@@ -109,6 +109,7 @@ export default function App() {
   const [network, setNetwork] = useState<NetworkData | null>(null);
   const [loading, setLoading] = useState(false);
   const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   useEffect(() => { fetchFounders(); }, []);
 
@@ -130,11 +131,19 @@ export default function App() {
   };
 
   const handleStartupSubmit = async (formData: any) => {
+    setIsEvaluating(true);
     try {
-      const res = await axios.post('http://localhost:3001/api/startup-evaluation', { company_name: "Startup Analysis", details: formData }, { headers: { 'x-tenant-id': TENANT_ID } });
+      const res = await axios.post('http://localhost:3001/api/evaluate', formData, {
+        headers: { 'x-tenant-id': TENANT_ID }
+      });
       setEvaluationData(res.data.data);
       setView('analysis');
-    } catch (err) { console.error("Error saving startup:", err); }
+    } catch (err) {
+      console.error("Evaluation error:", err);
+      alert('Evaluation failed. Please try again.');
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   const getNetwork = async (founderName: string) => {
@@ -157,6 +166,49 @@ export default function App() {
     { category: "Finances", score: 6, feedback: "Projections are realistic; link hiring plan to runway." },
     { category: "The Ask", score: 7, feedback: "Round size is appropriate for an 18-month runway." }
   ];
+
+  // Transform evaluation data into scorecard format
+  const getScorecardData = () => {
+    if (!evaluationData) return { scores: mockAnalysis, overallAssessment: '', recommendedNextSteps: [] };
+    
+    const categories = [
+      { key: 'business', label: 'Business' },
+      { key: 'market', label: 'Market' },
+      { key: 'product', label: 'Product' },
+      { key: 'traction', label: 'Traction' },
+      { key: 'competition', label: 'Competition' },
+      { key: 'gtm', label: 'GTM' },
+      { key: 'ops', label: 'Operations' },
+      { key: 'team', label: 'Team' },
+      { key: 'finances', label: 'Finances' },
+      { key: 'ask', label: 'The Ask' }
+    ];
+
+    const scores = categories.map(cat => {
+      const feedback = evaluationData[`feedback_${cat.key}`];
+      if (feedback && typeof feedback === 'object') {
+        return {
+          category: cat.label,
+          score: feedback.score || 5,
+          feedback: feedback.feedback || 'No feedback available',
+          strengths: feedback.strengths || [],
+          improvements: feedback.improvements || []
+        };
+      }
+      // Fallback to score columns if feedback not parsed
+      return {
+        category: cat.label,
+        score: evaluationData[`score_${cat.key}`] || 5,
+        feedback: 'AI evaluation pending'
+      };
+    });
+
+    return {
+      scores,
+      overallAssessment: evaluationData.overall_assessment || '',
+      recommendedNextSteps: evaluationData.recommended_next_steps || []
+    };
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-8 font-sans">
@@ -231,9 +283,14 @@ export default function App() {
             </div>
           </div>
         ) : view === 'wizard' ? (
-          <StartupWizard onComplete={handleStartupSubmit} />
+          <StartupWizard onComplete={handleStartupSubmit} isEvaluating={isEvaluating} />
         ) : view === 'analysis' ? (
-          <Scorecard scores={mockAnalysis} onGenerateDeck={() => setView('pitch-deck')} />
+          <Scorecard 
+            scores={getScorecardData().scores} 
+            overallAssessment={getScorecardData().overallAssessment}
+            recommendedNextSteps={getScorecardData().recommendedNextSteps}
+            onGenerateDeck={() => setView('pitch-deck')} 
+          />
         ) : view === 'pitch-deck' ? (
           <PitchDeck evaluationData={evaluationData} onBack={() => setView('analysis')} />
         ) : (
