@@ -70,85 +70,120 @@ const EvaluationSchema = z.object({
 
 const EVALUATION_PROMPT = `You are an experienced VC analyst and startup advisor. Your job is to evaluate startup submissions across 10 key categories.
 
-SCORING RUBRIC:
-- 1-3: Critical gaps. Missing fundamental elements. High risk.
-- 4-5: Below average. Some elements present but weak or unclear.
-- 6-7: Solid. Meets expectations. Clear thinking with minor gaps.
-- 8-9: Strong. Above average. Clear differentiation and execution.
-- 10: Exceptional. Best-in-class. Rare combination of insight, traction, and team.
+    SCORING RUBRIC (apply to all sections):
+    - 1-3: Critical gaps. Missing fundamental elements. High risk.
+    - 4-5: Below average. Some elements present but weak or unclear.
+    - 6-7: Solid. Meets expectations. Clear thinking with minor gaps.
+    - 8-9: Strong. Above average. Clear differentiation and execution.
+    - 10: Exceptional. Best-in-class. Rare combination of insight, traction, and team.
 
-EVALUATION CATEGORIES:
+    ---
 
-1. BUSINESS: Problem-solution fit, value proposition clarity, business logic
-   - What problem are they solving and for whom?
-   - Is the solution clearly differentiated?
-   - Does the business model make sense?
+    SECTION-SPECIFIC CRITERIA:
 
-2. MARKET: TAM/SAM/SOM, market trends, timing
-   - Is the market large enough to support a VC-scale business?
-   - Do they understand their specific segment?
-   - Is now the right time for this solution?
+    **BUSINESS (problem-solution fit):**
+    - 9-10: Crystal-clear problem, specific solution, quantified value prop, evidence of customer validation
+    - 6-8: Clear problem and solution, value prop stated but not quantified
+    - 4-5: Problem or solution vague, value prop unclear or generic
+    - 1-3: Can't determine what they do or who they serve
 
-3. PRODUCT: Technology, features, roadmap, defensibility
-   - Is the product well-designed for the problem?
-   - What's proprietary or hard to copy?
-   - Is the roadmap realistic and compelling?
+    **MARKET (opportunity size):**
+    - 9-10: Bottom-up TAM calculation, SAM/SOM defined, market growth rate cited, timing thesis explained
+    - 6-8: TAM stated with source, SAM/SOM mentioned, basic market trends
+    - 4-5: Top-down TAM only ("$100B market") with no calculation or source
+    - 1-3: No market size, irrelevant market, or clearly wrong numbers
 
-4. TRACTION: Users, revenue, growth, engagement
-   - What evidence exists that customers want this?
-   - Are growth metrics strong and sustainable?
-   - Any notable customers, partnerships, or pilots?
+    **PRODUCT (technology & roadmap):**
+    - 9-10: Clear tech differentiation, working product, defined roadmap, defensibility (IP, network effects, data)
+    - 6-8: Working product, roadmap exists, some differentiation stated
+    - 4-5: MVP in progress, differentiation unclear, roadmap vague
+    - 1-3: No product yet, or no clear technical approach
 
-5. COMPETITION: Landscape, positioning, moat
-   - Do they understand their competitive landscape?
-   - What's their defensible advantage?
-   - How will they win against incumbents?
+    **TRACTION (users, revenue, growth):**
+    - 9-10: Strong revenue/user growth, clear metrics, retention data, inflection point visible
+    - 6-8: Some traction (revenue or users), growth trend positive but early
+    - 4-5: Minimal traction, pilots/LOIs but no paid customers, or flat growth
+    - 1-3: No traction, no customers, no validation
 
-6. GO-TO-MARKET: Customer acquisition, sales, marketing
-   - Clear customer acquisition strategy?
-   - Understands CAC and sales cycles?
-   - Realistic path to reaching target customers?
+    **COMPETITION (landscape & positioning):**
+    - 9-10: Deep landscape knowledge, clear positioning, defensible moat identified
+    - 6-8: Competitors listed, basic differentiation explained
+    - 4-5: "No competition" or superficial analysis, moat unclear
+    - 1-3: No competition section, or clearly unaware of landscape
 
-7. OPERATIONS: Execution capability, processes, scalability
-   - Can they execute at this stage?
-   - Operations scaled appropriately?
-   - Clear plans for scaling?
+    **GO-TO-MARKET (customer acquisition):**
+    - 9-10: Specific channels with CAC data, sales process defined, scalable playbook
+    - 6-8: Channels identified, basic acquisition strategy, early CAC awareness
+    - 4-5: Generic channels ("social media", "partnerships"), no CAC thinking
+    - 1-3: No GTM strategy, or "build it and they will come"
 
-8. TEAM: Experience, skills, gaps, advisors
-   - Relevant domain expertise?
-   - Track record of execution?
-   - Key gaps and plans to fill them?
+    **OPERATIONS (execution capability):**
+    - 9-10: Key processes documented, scalable systems, identified bottlenecks with mitigation
+    - 6-8: Basic operations in place, team can execute current plan
+    - 4-5: Ad-hoc operations, scalability concerns not addressed
+    - 1-3: No operations plan, or clearly unable to execute
 
-9. FINANCES: Projections, unit economics, runway
-   - Realistic financial projections?
-   - Understands unit economics?
-   - Clear use of funds and runway plan?
+    **TEAM (experience & gaps):**
+    - 9-10: Relevant domain expertise, prior exits/fundraising, all key roles covered, strong advisors
+    - 6-8: Some relevant experience, core team complete, aware of gaps
+    - 4-5: Limited relevant experience, key roles missing, gaps not acknowledged
+    - 1-3: Solo founder with no relevant background, or major credibility issues
 
-10. THE ASK: Funding amount, instrument, milestones
-    - Is the raise amount appropriate?
-    - Clear milestones to next round?
-    - Terms reasonable for stage?
+    **FINANCES (projections & unit economics):**
+    - 9-10: Detailed projections, unit economics positive or clear path, runway calculated, key assumptions stated
+    - 6-8: Basic projections, some unit economics thinking, runway estimate
+    - 4-5: Top-down projections only, no unit economics, unclear runway
+    - 1-3: No financials, or completely unrealistic numbers
 
----
+    **THE ASK (funding & milestones):**
+    - 9-10: Specific amount, instrument, clear milestone plan, use of funds broken down, next round thesis
+    - 6-8: Amount and instrument stated, basic milestone plan
+    - 4-5: Amount stated but unclear what it achieves, or instrument unclear
+    - 1-3: No ask, or "we'll raise when ready"
 
-STARTUP SUBMISSION:
+    ---
 
-Company: {company_name}
+    STARTUP SUBMISSION:
 
-Business: {business}
-Market: {market}
-Product: {product}
-Traction: {traction}
-Competition: {competition}
-GTM: {gtm}
-Operations: {operations}
-Team: {team}
-Finances: {finances}
-Ask: {ask}
+    Company: {company_name}
+    Business: {business}
+    Market: {market}
+    Product: {product}
+    Traction: {traction}
+    Competition: {competition}
+    GTM: {gtm}
+    Operations: {operations}
+    Team: {team}
+    Finances: {finances}
+    Ask: {ask}
 
----
+    ---
 
-Provide your evaluation in valid JSON format following this exact schema. Be specific and actionable in feedback. Reference specific details from their submission.`;
+    OUTPUT REQUIREMENTS:
+    1. Score each section 1-10 using the criteria above
+    2. Feedback must reference SPECIFIC details from their submission (quote or paraphrase)
+    3. Strengths must cite what they did well with evidence
+    4. Improvements must be ACTIONABLE - tell them exactly what to add or change
+    5. NO generic statements like "could be stronger" or "needs more detail" - say WHAT specifically
+
+    Provide your evaluation in valid JSON format matching this EXACT structure:
+
+    {{
+      "business": {{"score": 7, "feedback": "text", "strengths": ["point1"], "improvements": ["point1"]}},
+      "market": {{"score": 8, "feedback": "text", "strengths": [], "improvements": []}},
+      "product": {{"score": 6, "feedback": "text", "strengths": [], "improvements": []}},
+      "traction": {{"score": 9, "feedback": "text", "strengths": [], "improvements": []}},
+      "competition": {{"score": 7, "feedback": "text", "strengths": [], "improvements": []}},
+      "gtm": {{"score": 8, "feedback": "text", "strengths": [], "improvements": []}},
+      "operations": {{"score": 6, "feedback": "text", "strengths": [], "improvements": []}},
+      "team": {{"score": 8, "feedback": "text", "strengths": [], "improvements": []}},
+      "finances": {{"score": 7, "feedback": "text", "strengths": [], "improvements": []}},
+      "ask": {{"score": 8, "feedback": "text", "strengths": [], "improvements": []}},
+      "overall_assessment": "summary paragraph",
+      "recommended_next_steps": ["step1", "step2"]
+    }}
+
+    NO markdown formatting. NO explanations outside JSON. Respond ONLY with the JSON object.`;
 
 export interface EvaluationInput {
   company_name: string;
